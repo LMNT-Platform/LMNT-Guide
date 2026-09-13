@@ -692,7 +692,7 @@
       <span class="brand-text"><strong>LMNT Developer Guide</strong><span>Platform integration reference</span></span>
     </a>
 
-    <span class="version-badge">Source 26.09.04</span>
+    <span class="version-badge">Source 26.09.05</span>
 
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -781,8 +781,8 @@
             tenancy, permissions, navigation, realtime communication, workflows, observability, settings, and the application shell.
           </p>
           <div class="hero-meta">
-            <span class="version-badge">Backend 26.09.04</span>
-            <span class="version-badge">UI 26.09.04</span>
+            <span class="version-badge">Backend 26.09.05</span>
+            <span class="version-badge">UI 26.09.05</span>
             <span class="version-badge">Spring Boot 3.4.4</span>
             <span class="version-badge">React 19 · Vite 8</span>
           </div>
@@ -794,8 +794,8 @@
         </div>
 
         <div class="callout">
-          <div class="callout-title">26.09.04 source highlights</div>
-          This snapshot keeps <code>lmnt-core</code> as the primary backend artifact, adds the backend-compiled Workflow Designer, upgrades visual workflow storage and deployment, imports XML-only Flowable definitions into editable visual drafts, refines the designer linking UX, and keeps optional backend/UI feature packages independently consumable.
+          <div class="callout-title">26.09.05 source highlights</div>
+          This snapshot keeps <code>lmnt-core</code> as the primary backend artifact, adds framework-level security controls for rate limiting, login abuse protection and idempotent operations, improves the Security UI and system selectors, and keeps optional backend/UI feature packages independently consumable.
         </div>
 
         <section class="doc-section" id="architecture" data-search="architecture backend frontend maven npm platform product reusable package spring boot react ui shell modular core optional">
@@ -845,7 +845,7 @@
         <section class="doc-section" id="module-packages" data-search="module packages backend ui core operations workflow finance communication board webhook artifact npm maven">
           <span class="section-kicker">Foundation</span>
           <h2><a class="anchor" href="#module-packages">Modular package map</a></h2>
-          <p class="lead">Backend and UI modules are versioned together at <code>26.09.04</code>, but each package can be consumed and released separately.</p>
+          <p class="lead">Backend and UI modules are versioned together at <code>26.09.05</code>, but each package can be consumed and released separately.</p>
 
           <div class="table-wrap">
             <table>
@@ -1140,7 +1140,7 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
           </ul>
         </section>
 
-        <section class="doc-section" id="modules" data-search="modules routes home dashboard analytics users roles permissions organizations tenants notifications chat ai wall payments workflow board calendar payroll expense tickets settings subscriptions trace">
+        <section class="doc-section" id="modules" data-search="modules routes home dashboard analytics security rate limit login protection idempotency users roles permissions organizations tenants notifications chat ai wall payments workflow board calendar payroll expense tickets settings subscriptions trace">
           <span class="section-kicker">Platform directory</span>
           <h2><a class="anchor" href="#modules">Framework module directory</a></h2>
           <p class="lead">Actual visibility depends on menu configuration, permissions, product access and enabled infrastructure.</p>
@@ -1150,6 +1150,7 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
             <div class="module"><div><div class="module-name">Dashboard</div><span class="status stable">Stable</span></div><div class="module-route">/dashboard</div><div class="module-desc">Identity context, permissions, active users, security discrepancy indicators, request telemetry, audit feed and MQ trace summary.</div></div>
             <div class="module"><div><div class="module-name">Analytics</div><span class="status stable">Stable</span></div><div class="module-route">/analytics</div><div class="module-desc">CPU, heap, threads, uptime, request history, infrastructure health matrix, API logs and audit logs.</div></div>
             <div class="module"><div><div class="module-name">API Trace</div><span class="status conditional">RabbitMQ</span></div><div class="module-route">/trace</div><div class="module-desc">Message-broker trace records filtered by status, product, date and exchange/routing/queue content.</div></div>
+            <div class="module"><div><div class="module-name">Security</div><span class="status stable">Stable</span></div><div class="module-route">/security</div><div class="module-desc">Framework guardrail state, rate-limit counters, login-protection activity, idempotency replay/conflict metrics and recent security events.</div></div>
             <div class="module"><div><div class="module-name">Users</div><span class="status stable">Stable</span></div><div class="module-route">/users</div><div class="module-desc">Profiles, tenant/org membership, roles, direct permissions, enable/disable, activity summary, API summary, detail modal and protected SuperAdmin account handling.</div></div>
             <div class="module"><div><div class="module-name">Roles</div><span class="status stable">Stable</span></div><div class="module-route">/roles</div><div class="module-desc">Global or scoped roles, descriptions, permission assignment, role lifecycle management and protected SADMIN role handling.</div></div>
             <div class="module"><div><div class="module-name">Permissions</div><span class="status stable">Stable</span></div><div class="module-route">/permissions</div><div class="module-desc">Resource/action permissions, scope metadata, activation state and tenant visibility/grantability.</div></div>
@@ -1177,7 +1178,7 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
           </div>
         </section>
 
-        <section class="doc-section" id="platform-modules" data-search="platform home dashboard analytics api trace observability metrics health audit active users infrastructure">
+        <section class="doc-section" id="platform-modules" data-search="platform home dashboard analytics api trace security rate limit login protection idempotency observability metrics health audit active users infrastructure">
           <span class="section-kicker">Modules</span>
           <h2><a class="anchor" href="#platform-modules">Platform and observability</a></h2>
 
@@ -1199,6 +1200,9 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
 
           <h3>API Trace</h3>
           <p>Displays RabbitMQ exchange, routing key, queue, status, duration and errors. It depends on MQ trace interception and stored trace records.</p>
+
+          <h3>Security</h3>
+          <p>The Security page summarizes framework-level guardrails: distributed rate limiting, login abuse protection, idempotency decisions and recent security events. It is intended for operators and superadmins to see which protection is active, what is being throttled or replayed, and whether a framework security feature has been disabled by configuration.</p>
         </section>
 
         <section class="doc-section" id="identity-modules" data-search="identity users roles permissions tenants organizations menu management administration multi tenant">
@@ -1508,7 +1512,7 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
             <pre><code>&lt;dependency&gt;
   &lt;groupId&gt;com.platform&lt;/groupId&gt;
   &lt;artifactId&gt;lmnt-core&lt;/artifactId&gt;
-  &lt;version&gt;26.09.04&lt;/version&gt;
+  &lt;version&gt;26.09.05&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
           </div>
           <p>Add optional backend modules as separate dependencies, for example <code>com.platform:lmnt-workflow</code> for workflow APIs or <code>com.platform:lmnt-board</code> for Board APIs.</p>
@@ -1631,9 +1635,9 @@ export const productRoutes: LmntProductRoute[] = [
           <div class="code-block">
             <div class="code-head"><span>Install UI package</span><button class="copy-btn">Copy</button></div>
             <pre><code>set GITHUB_TOKEN=ghp_your_read_packages_token
-npm install @lmnt-platform/lmnt-ui-core@26.09.04</code></pre>
+npm install @lmnt-platform/lmnt-ui-core@26.09.05</code></pre>
           </div>
-          <p>Install optional UI modules separately, for example <code>npm install @lmnt-platform/lmnt-ui-workflow@26.09.04</code>.</p>
+          <p>Install optional UI modules separately, for example <code>npm install @lmnt-platform/lmnt-ui-workflow@26.09.05</code>.</p>
 
           <h3>Maven dependency</h3>
           <div class="code-block">
@@ -1648,13 +1652,13 @@ npm install @lmnt-platform/lmnt-ui-core@26.09.04</code></pre>
 &lt;dependency&gt;
   &lt;groupId&gt;com.platform&lt;/groupId&gt;
   &lt;artifactId&gt;lmnt-core&lt;/artifactId&gt;
-  &lt;version&gt;26.09.04&lt;/version&gt;
+  &lt;version&gt;26.09.05&lt;/version&gt;
 &lt;/dependency&gt;
 
 &lt;dependency&gt;
   &lt;groupId&gt;com.platform&lt;/groupId&gt;
   &lt;artifactId&gt;lmnt-workflow&lt;/artifactId&gt;
-  &lt;version&gt;26.09.04&lt;/version&gt;
+  &lt;version&gt;26.09.05&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
           </div>
           <p>The <code>github</code> repository ID must match the server entry in <code>~/.m2/settings.xml</code>. Use an environment-backed password such as <code>${env.GITHUB_TOKEN}</code> in Maven settings and do not add optional modules unless the product uses them.</p>
@@ -1775,21 +1779,35 @@ npm run dev</code></pre></div>
           <p>Nginx should proxy <code>/api/web-push/</code> to the backend before the generic SPA fallback so <code>/api/web-push/public-key</code> and <code>/api/web-push/service-worker.js</code> are served by Spring. The normal <code>/api/</code> proxy is usually sufficient, but an explicit Web Push block makes the service-worker route harder to misroute or cache incorrectly.</p>
         </section>
 
-        <section class="doc-section" id="security" data-search="security secrets jwt cookie https csrf same site bcrypt authorization package tokens api keys production inactivity disable audit">
+        <section class="doc-section" id="security" data-search="security secrets jwt cookie https csrf same site bcrypt authorization package tokens api keys production inactivity disable audit rate limit login protection abuse cooldown idempotency redis">
           <span class="section-kicker">Operations</span>
           <h2><a class="anchor" href="#security">Security guidance</a></h2>
           <ul class="checklist">
             <li>Use a strong deployment-specific JWT secret.</li>
             <li>Enable secure cookies behind HTTPS.</li>
             <li>Restrict WebSocket allowed origins to trusted product origins.</li>
+            <li>Keep Redis available for distributed rate limiting, login protection and idempotency guards.</li>
             <li>Serve production products over HTTPS before relying on Web Push subscriptions.</li>
             <li>Keep package tokens, API keys and registry credentials outside source control.</li>
             <li>Replace all development Compose passwords.</li>
             <li>Do not expose AI, MinIO, Redis, RabbitMQ, database or LiveKit secrets through frontend APIs.</li>
             <li>Use backend <code>@RequiresPermission</code> checks even when a frontend action is hidden.</li>
+            <li>Use <code>@LmntIdempotent</code> only on side-effect endpoints that are safe to replay by idempotency key.</li>
             <li>Review automatic inactive-user disablement before production rollout.</li>
             <li>Audit role combinations and separation-of-duties warnings.</li>
           </ul>
+
+          <h3>Framework security controls</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Control</th><th>Default behavior</th><th>Product impact</th></tr></thead>
+              <tbody>
+                <tr><td>Distributed rate limiting</td><td>Redis-backed counters protect authenticated API, public API and annotated endpoint-specific limits.</td><td>Products inherit baseline limits automatically and can add <code>@LmntRateLimit</code> for stricter endpoint rules.</td></tr>
+                <tr><td>Login abuse protection</td><td>Credential failures are tracked independently by IP and normalized username with progressive cooldowns.</td><td>Existing login contracts remain generic while the UI can show cooldown timing from the framework response.</td></tr>
+                <tr><td>Idempotency</td><td>Annotated endpoints require <code>Idempotency-Key</code>, store request fingerprints and replay completed responses.</td><td>Use for booking/payment/order-style create APIs where duplicate submission would create real side effects.</td></tr>
+              </tbody>
+            </table>
+          </div>
 
           <div class="callout warning">
             <div class="callout-title">CSRF design note</div>
@@ -1964,7 +1982,7 @@ npm run dev</code></pre></div>
             This manual was updated from the local <strong>LMNT</strong> source snapshot, including the modular Maven reactor, UI workspace packages, workflow configuration, application properties, backend services and UI shell exports available on August 20, 2026.
           </p>
           <p>
-            The analyzed source reports backend and frontend package version <code>26.09.04</code>. Deployed products may differ through package version, product routes, menu data, permissions, subscriptions, enabled modules and infrastructure configuration.
+            The analyzed source reports backend and frontend package version <code>26.09.05</code>. Deployed products may differ through package version, product routes, menu data, permissions, subscriptions, enabled modules and infrastructure configuration.
           </p>
         </section>
 
