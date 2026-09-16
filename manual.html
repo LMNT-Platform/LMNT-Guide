@@ -692,7 +692,7 @@
       <span class="brand-text"><strong>LMNT Developer Guide</strong><span>Platform integration reference</span></span>
     </a>
 
-    <span class="version-badge">Source 26.09.05</span>
+    <span class="version-badge">Source 26.09.07</span>
 
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -781,8 +781,8 @@
             tenancy, permissions, navigation, realtime communication, workflows, observability, settings, and the application shell.
           </p>
           <div class="hero-meta">
-            <span class="version-badge">Backend 26.09.05</span>
-            <span class="version-badge">UI 26.09.05</span>
+            <span class="version-badge">Backend 26.09.07</span>
+            <span class="version-badge">UI 26.09.07</span>
             <span class="version-badge">Spring Boot 3.4.4</span>
             <span class="version-badge">React 19 · Vite 8</span>
           </div>
@@ -794,7 +794,7 @@
         </div>
 
         <div class="callout">
-          <div class="callout-title">26.09.05 source highlights</div>
+          <div class="callout-title">26.09.07 source highlights</div>
           This snapshot keeps <code>lmnt-core</code> as the primary backend artifact, adds framework-level security controls for rate limiting, login abuse protection and idempotent operations, improves the Security UI and system selectors, and keeps optional backend/UI feature packages independently consumable.
         </div>
 
@@ -845,7 +845,7 @@
         <section class="doc-section" id="module-packages" data-search="module packages backend ui core operations workflow finance communication board webhook artifact npm maven">
           <span class="section-kicker">Foundation</span>
           <h2><a class="anchor" href="#module-packages">Modular package map</a></h2>
-          <p class="lead">Backend and UI modules are versioned together at <code>26.09.05</code>, but each package can be consumed and released separately.</p>
+          <p class="lead">Backend and UI modules are versioned together at <code>26.09.07</code>, but each package can be consumed and released separately.</p>
 
           <div class="table-wrap">
             <table>
@@ -931,7 +931,7 @@
           </div>
         </section>
 
-        <section class="doc-section" id="login" data-search="login authentication session cookie jwt geolocation location product logo theme expired forgot password">
+        <section class="doc-section" id="login" data-search="login authentication session cookie jwt geolocation location product logo theme expired forgot password active devices device limit product badge">
           <span class="section-kicker">Authentication</span>
           <h2><a class="anchor" href="#login">Login and session behavior</a></h2>
           <p class="lead">The login page is framework-owned but product-aware.</p>
@@ -957,14 +957,23 @@
             <li>The default cookie name is <code>LMNT_TOKEN</code>.</li>
             <li>The cookie is <strong>HttpOnly</strong>, scoped to <code>/</code>, and uses <strong>SameSite=Lax</strong>.</li>
             <li><code>LMNT_AUTH_COOKIE_SECURE=true</code> is required for HTTPS-only production cookies.</li>
-            <li>The token is refreshed during authenticated requests, producing a sliding session window.</li>
+            <li>The cookie lifetime is controlled by <code>LMNT_AUTH_COOKIE_MAX_AGE_SECONDS</code>; active users keep activity fresh through authenticated application traffic and realtime presence.</li>
             <li>The returned LMNT activity session ID is stored locally only to finalize presence and activity during logout.</li>
+            <li>The separate <code>LMNT_DEVICE_ID</code> cookie identifies a browser/device across repeated logins so device limits are based on devices, not the number of login rows created over time.</li>
             <li>API clients may use a Bearer token because the backend falls back to the <code>Authorization</code> header when no cookie exists.</li>
           </ul>
 
-          <div class="callout warning">
-            <div class="callout-title">Current source limitation</div>
-            The “Forgot your password?” control is present in the form but links to <code>#</code>. A password-reset workflow must be supplied before presenting it as functional.
+          <h3>Device limits and active sessions</h3>
+          <ul>
+            <li>Device limiting is off by default and can be enabled with <code>LMNT_AUTH_DEVICE_LIMIT_ENABLED=true</code>.</li>
+            <li>The default device cap is <code>3</code>, configurable through <code>LMNT_AUTH_DEVICE_LIMIT_MAX_DEVICES</code>.</li>
+            <li>The Account menu shows active devices and allows the current user to remotely sign out other devices, excluding the current session.</li>
+            <li>The Dashboard User Sessions panel groups sessions by user/device, hides signed-out rows by default, and shows product-code badges only when the session belongs to another product.</li>
+          </ul>
+
+          <div class="callout">
+            <div class="callout-title">Forgot password flow</div>
+            The login page can raise a dedicated forgot-password support ticket through the public framework endpoint. The support queue then handles the reset request without exposing whether a username exists to unauthenticated users.
           </div>
 
           <h3>Expired sessions</h3>
@@ -1061,7 +1070,7 @@
           <p>After a successful change, the UI dispatches an internal menu-refresh event so the sidebar can reload without a full sign-out.</p>
         </section>
 
-        <section class="doc-section" id="user-menu" data-search="user menu profile account organization switching membership roles direct permissions password logout settings notifications avatar">
+        <section class="doc-section" id="user-menu" data-search="user menu profile account organization switching membership roles direct permissions password logout settings notifications avatar active devices sessions remote logout">
           <span class="section-kicker">Identity context</span>
           <h2><a class="anchor" href="#user-menu">User menu and organization switching</a></h2>
           <p class="lead">The user control at the bottom of the sidebar is both an account menu and the active organization selector.</p>
@@ -1076,6 +1085,7 @@
               <h3>Account controls</h3>
               <p>The compact dropdown header shows the user name plus a phone-first contact line. If no phone number exists it falls back to email, truncating long values with the full value available on hover.</p>
               <p>The account dialog displays profile details, encrypted user ID, contact data, tenant, addresses, timezone, manager, roles and direct permissions. The menu also links to notifications, conditionally exposes Settings and performs logout.</p>
+              <p>The Active devices tab shows current and other device records. Other sessions can be remotely signed out from here; the current session is protected from accidental remote logout.</p>
             </div>
           </div>
 
@@ -1088,6 +1098,9 @@
             <li>Differ from the current password.</li>
           </ul>
           <p>After a successful change, LMNT signs the user out and requires a new login.</p>
+
+          <h3>Cross-product presence</h3>
+          <p>When realtime user/session information includes activity from another LMNT product, the UI can show a compact product-code badge. The badge is hidden for sessions from the same product so normal single-product screens stay clean.</p>
 
           <div class="callout warning">
             <div class="callout-title">Context changes permissions</div>
@@ -1193,16 +1206,35 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
             <li>Realtime active-user presence and idle duration.</li>
             <li>Separation-of-duties and identity-scope discrepancy indicators.</li>
             <li>API metrics, audit events and recent message-queue traces.</li>
+            <li>User devices grouped by user with backend pagination, active/signed-out filtering, search and remote logout actions.</li>
+            <li>Unread chat count and ongoing Wall event counts surfaced through sidebar badges.</li>
           </ul>
 
           <h3>Analytics</h3>
           <p>Provides system CPU, process CPU, JVM heap/non-heap memory, Redis memory, threads, uptime, request history and connectivity summaries for MySQL, Redis, MinIO, Ollama, RabbitMQ, LiveKit and Razorpay.</p>
+          <p>The telemetry view is module-aware. It keeps the existing analytics cards, then adds richer dependency telemetry only when the supporting Java module or infrastructure bean exists.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Telemetry group</th><th>What it can show</th></tr></thead>
+              <tbody>
+                <tr><td>Runtime</td><td>Application uptime, JVM memory, threads, HTTP request metrics, executor pools and scheduled task health.</td></tr>
+                <tr><td>Database pools</td><td>Each detected datasource, pool type, max/active/idle/waiting connections, usage percentage, schema size and MySQL process-list counts by database.</td></tr>
+                <tr><td>Redis</td><td>Connectivity, memory usage, clients, keyspace and realtime Redis availability where configured.</td></tr>
+                <tr><td>RabbitMQ</td><td>Connection state, queue/exchange telemetry and message trace activity when the module is present.</td></tr>
+                <tr><td>Core module</td><td>User/session counts, roles, permissions, notifications, web push, tickets, product subscriptions, MinIO and payment configuration status.</td></tr>
+                <tr><td>Communication module</td><td>Direct/group messages, unread counts, attachments, Wall posts/events, call status totals and realtime bridge state.</td></tr>
+                <tr><td>Workflow module</td><td>Flowable definitions, tasks, runtime instances, jobs, dead-letter jobs, active designs and tracked workflow states.</td></tr>
+                <tr><td>Webhook module</td><td>WhatsApp messages by status/direction, templates, webhook events, API keys and failed request activity.</td></tr>
+              </tbody>
+            </table>
+          </div>
 
           <h3>API Trace</h3>
           <p>Displays RabbitMQ exchange, routing key, queue, status, duration and errors. It depends on MQ trace interception and stored trace records.</p>
 
           <h3>Security</h3>
           <p>The Security page summarizes framework-level guardrails: distributed rate limiting, login abuse protection, idempotency decisions and recent security events. It is intended for operators and superadmins to see which protection is active, what is being throttled or replayed, and whether a framework security feature has been disabled by configuration.</p>
+          <p>Failure Activity is backend-paginated and searchable by user, IP, endpoint, action and detail. The source IP depends on trusted-proxy configuration; when the app runs behind Docker, Nginx or another proxy, configure <code>LMNT_SECURITY_TRUSTED_PROXIES</code> so LMNT can safely use the forwarded client address instead of the proxy/container address.</p>
         </section>
 
         <section class="doc-section" id="identity-modules" data-search="identity users roles permissions tenants organizations menu management administration multi tenant">
@@ -1242,6 +1274,9 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
                 <tr><td>Edit a visual workflow</td><td>Open the saved designer draft, make changes, save, then deploy. Flowable receives a new version for the same process key.</td></tr>
                 <tr><td>Edit an XML-only deployed workflow</td><td>Use <strong>Import to designer</strong> from the Designer catalog. LMNT reads the deployed BPMN XML, converts supported nodes and sequence flows into the visual editor, then opens it as an unsaved visual draft.</td></tr>
                 <tr><td>View generated XML</td><td>Save the draft first. If the editor has unsaved changes, XML preview is dimmed and asks the user to save so stale XML is not mistaken for the current graph.</td></tr>
+                <tr><td>Delete a draft</td><td>Designer deletion is soft delete. Deleted drafts leave existing Flowable runtime definitions untouched.</td></tr>
+                <tr><td>Replace a deployed workflow</td><td>Save the draft and deploy again. Flowable creates a new definition version; no app restart is required for new process starts to use the latest deployed version.</td></tr>
+                <tr><td>Retire a deployed workflow</td><td>Use Definitions to suspend a definition when new instances must stop. Existing runtime instances follow Flowable's normal suspend/activate semantics.</td></tr>
               </tbody>
             </table>
           </div>
@@ -1281,6 +1316,7 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
 }</code></pre>
           </div>
           <p>Role assignments are validated against visible LMNT roles before being copied into process variables. Keep workflow variables simple and serializable; do not store JPA entities, credentials or large payloads in the process instance.</p>
+          <p>Framework workbench pages can be opened without the full app layout. Products should save their own product-table data through product APIs before invoking workflow submit/complete actions, then pass only stable IDs, business keys and small variables into the workflow layer.</p>
 
           <h3>The Board</h3>
           <p>The Board implements projects and Kanban tasks with Backlog, To Do, In Progress, Review and Done transitions. Tasks can carry type, priority, assignee, business key and workflow instance metadata.</p>
@@ -1296,12 +1332,16 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
           <h3>Chat</h3>
           <ul>
             <li>Direct conversations and group conversations.</li>
+            <li>Backend-paginated user search for starting direct chats, so large user tables do not need to be loaded into the modal.</li>
             <li>Create, rename and delete groups subject to authorization.</li>
             <li>Unread/read state for direct and group messages.</li>
             <li>Presence, last-seen information and typing indicators.</li>
-            <li>Reply context and rich-text shortcuts.</li>
-            <li>Attachments stored through the framework attachment service.</li>
-            <li>Audio/video call controls when direct-call infrastructure is available.</li>
+            <li>Reply context, rich-text shortcuts, optimistic sending state and realtime reconciliation after backend persistence.</li>
+            <li>Date separators such as Today/Yesterday, compact timestamp grouping and per-message reply actions even when adjacent messages are visually grouped.</li>
+            <li>Attachments stored through the framework attachment service with file/link previews where supported.</li>
+            <li>Profile pictures can be expanded in a modal inside the chat surface.</li>
+            <li>Audio/video call controls and call-history messages when direct-call infrastructure is available.</li>
+            <li>Product-code badges can identify users active from another LMNT product; same-product badges are hidden.</li>
           </ul>
 
           <h3>AI Chat</h3>
@@ -1309,6 +1349,7 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
 
           <h3>The Wall</h3>
           <p>An internal community feed for announcements and events. It supports cover images, date ranges, locations, pinning, reactions, comments, RSVP and notification-linked deep navigation.</p>
+          <p>The sidebar Wall entry can show the count of ongoing events, while Chat can show unread message count. Keep these counts backend-backed and compact so they remain cheap as product traffic grows.</p>
         </section>
 
         <section class="doc-section" id="finance-support" data-search="payments razorpay payroll expense claims product subscriptions tickets support attachments work item board task finance">
@@ -1512,7 +1553,7 @@ HMS_BOOKINGS_MENU_MANAGE</code></pre>
             <pre><code>&lt;dependency&gt;
   &lt;groupId&gt;com.platform&lt;/groupId&gt;
   &lt;artifactId&gt;lmnt-core&lt;/artifactId&gt;
-  &lt;version&gt;26.09.05&lt;/version&gt;
+  &lt;version&gt;26.09.07&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
           </div>
           <p>Add optional backend modules as separate dependencies, for example <code>com.platform:lmnt-workflow</code> for workflow APIs or <code>com.platform:lmnt-board</code> for Board APIs.</p>
@@ -1635,9 +1676,9 @@ export const productRoutes: LmntProductRoute[] = [
           <div class="code-block">
             <div class="code-head"><span>Install UI package</span><button class="copy-btn">Copy</button></div>
             <pre><code>set GITHUB_TOKEN=ghp_your_read_packages_token
-npm install @lmnt-platform/lmnt-ui-core@26.09.05</code></pre>
+npm install @lmnt-platform/lmnt-ui-core@26.09.07</code></pre>
           </div>
-          <p>Install optional UI modules separately, for example <code>npm install @lmnt-platform/lmnt-ui-workflow@26.09.05</code>.</p>
+          <p>Install optional UI modules separately, for example <code>npm install @lmnt-platform/lmnt-ui-workflow@26.09.07</code>.</p>
 
           <h3>Maven dependency</h3>
           <div class="code-block">
@@ -1652,13 +1693,13 @@ npm install @lmnt-platform/lmnt-ui-core@26.09.05</code></pre>
 &lt;dependency&gt;
   &lt;groupId&gt;com.platform&lt;/groupId&gt;
   &lt;artifactId&gt;lmnt-core&lt;/artifactId&gt;
-  &lt;version&gt;26.09.05&lt;/version&gt;
+  &lt;version&gt;26.09.07&lt;/version&gt;
 &lt;/dependency&gt;
 
 &lt;dependency&gt;
   &lt;groupId&gt;com.platform&lt;/groupId&gt;
   &lt;artifactId&gt;lmnt-workflow&lt;/artifactId&gt;
-  &lt;version&gt;26.09.05&lt;/version&gt;
+  &lt;version&gt;26.09.07&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
           </div>
           <p>The <code>github</code> repository ID must match the server entry in <code>~/.m2/settings.xml</code>. Use an environment-backed password such as <code>${env.GITHUB_TOKEN}</code> in Maven settings and do not add optional modules unless the product uses them.</p>
@@ -1769,6 +1810,11 @@ npm run dev</code></pre></div>
                 <tr><td>AI</td><td><code>LMNT_AI_SERVER</code> plus model/context settings exposed by application properties and Settings APIs.</td></tr>
                 <tr><td>Razorpay</td><td><code>LMNT_RAZORPAY_KEY_ID</code>, <code>LMNT_RAZORPAY_KEY_SECRET</code></td></tr>
                 <tr><td>Authentication</td><td><code>LMNT_JWT_SECRET</code>, <code>LMNT_AUTH_COOKIE_SECURE</code>, <code>LMNT_AUTH_COOKIE_MAX_AGE_SECONDS</code></td></tr>
+                <tr><td>Client IP resolution</td><td><code>LMNT_SECURITY_TRUSTED_PROXIES</code>. Add only trusted reverse-proxy/container IPs; this controls whether forwarded client IP headers are accepted.</td></tr>
+                <tr><td>Device sessions</td><td><code>LMNT_AUTH_DEVICE_COOKIE_MAX_AGE_SECONDS</code>, <code>LMNT_AUTH_DEVICE_LIMIT_ENABLED</code>, <code>LMNT_AUTH_DEVICE_LIMIT_MAX_DEVICES</code>, <code>LMNT_USER_ACTIVITY_CLEANUP_CRON</code></td></tr>
+                <tr><td>Rate limiting</td><td><code>LMNT_SECURITY_RATE_LIMIT_ENABLED</code>, <code>...AUTHENTICATED_LIMIT</code>, <code>...AUTHENTICATED_WINDOW</code>, <code>...PUBLIC_LIMIT</code>, <code>...PUBLIC_WINDOW</code>, <code>...FAIL_OPEN</code></td></tr>
+                <tr><td>Login protection</td><td><code>LMNT_SECURITY_LOGIN_PROTECTION_ENABLED</code>, failure-window and cooldown-threshold properties under <code>lmnt.security.login-protection.*</code>.</td></tr>
+                <tr><td>Idempotency</td><td><code>LMNT_IDEMPOTENCY_ENABLED</code>, <code>LMNT_IDEMPOTENCY_TTL</code>, <code>LMNT_IDEMPOTENCY_MIN_KEY_LENGTH</code>, <code>LMNT_IDEMPOTENCY_MAX_KEY_LENGTH</code></td></tr>
                 <tr><td>Retention jobs</td><td><code>LMNT_ANALYTICS_RETENTION_MINUTES</code>, <code>LMNT_BROADCAST_NOTIFICATION_RETENTION_DAYS</code>, chat attachment orphan-retention settings.</td></tr>
                 <tr><td>User inactivity</td><td><code>LMNT_USER_INACTIVITY_DISABLE_ENABLED</code>, <code>...AFTER_DAYS</code>, <code>...CRON</code>, <code>...ZONE</code></td></tr>
               </tbody>
@@ -1808,6 +1854,59 @@ npm run dev</code></pre></div>
               </tbody>
             </table>
           </div>
+
+          <h3>Rate limiting usage</h3>
+          <p>Baseline limits apply automatically. The framework defaults are <code>300</code> requests per minute per authenticated user and <code>100</code> requests per minute per public IP. Use endpoint-specific annotations only when a product endpoint needs a stricter or different scope than the framework default.</p>
+          <div class="code-block">
+            <div class="code-head"><span>Endpoint-specific rate limit</span><button class="copy-btn">Copy</button></div>
+            <pre><code>@LmntRateLimit(limit = 20, window = "1m", scope = RateLimitScope.API_KEY)
+@PostMapping("/api/v1/hms/bookings/search")
+public BookingSearchResponse searchBookings(@RequestBody BookingSearchRequest request) {
+  ...
+}</code></pre>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Scope</th><th>Use when</th></tr></thead>
+              <tbody>
+                <tr><td><code>IP</code></td><td>The caller is public or unauthenticated.</td></tr>
+                <tr><td><code>USER</code></td><td>Authenticated browser/mobile/API users should each receive their own quota.</td></tr>
+                <tr><td><code>API_KEY</code></td><td>External integrations authenticate through framework API keys.</td></tr>
+                <tr><td><code>TENANT</code></td><td>A tenant-wide noisy integration needs a shared cap.</td></tr>
+                <tr><td><code>ENDPOINT</code></td><td>The endpoint itself needs a global cap regardless of caller.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Exceeded requests return HTTP <code>429</code> with <code>Retry-After</code>. Generic rate limiting defaults to fail-open when Redis is unavailable so normal product traffic is not blocked by a guardrail outage.</p>
+
+          <h3>Login abuse protection</h3>
+          <p>Credential login is protected independently by source IP and normalized username. The default progressive cooldowns are 5 failures for 30 seconds, 8 failures for 5 minutes and 10 failures for 15 minutes. The response stays generic and should not reveal whether an account exists.</p>
+
+          <h3>Idempotency usage</h3>
+          <p>Do not make every POST endpoint idempotent. Use it for create/submit endpoints where a duplicate request would cause real side effects such as bookings, orders, payments or workflow submissions.</p>
+          <div class="code-block">
+            <div class="code-head"><span>Idempotent create API</span><button class="copy-btn">Copy</button></div>
+            <pre><code>@LmntIdempotent
+@PostMapping("/booking")
+public BookingResponse createBooking(@RequestBody BookingRequest request) {
+  ...
+}</code></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-head"><span>Client request</span><button class="copy-btn">Copy</button></div>
+            <pre><code>POST /booking
+Idempotency-Key: booking-100-client-attempt-1
+
+{ ... }</code></pre>
+          </div>
+          <ul>
+            <li>The first request executes normally and stores the completed status/body for the configured TTL.</li>
+            <li>The same key and same request fingerprint replays the original response without executing business logic again.</li>
+            <li>The same key with a different payload is rejected with HTTP <code>409</code>.</li>
+            <li>A duplicate arriving while the first request is still running is rejected as in-progress instead of executing twice.</li>
+            <li>For annotated endpoints, a missing <code>Idempotency-Key</code> is a clear client error.</li>
+            <li>Idempotency is fail-closed if Redis is unavailable because silently allowing duplicate side effects is worse than rejecting the request.</li>
+          </ul>
 
           <div class="callout warning">
             <div class="callout-title">CSRF design note</div>
@@ -1924,6 +2023,10 @@ npm run dev</code></pre></div>
             <div class="card"><h3>Feature key</h3><p>A stable product or framework identifier used to bind a business feature to a Flowable process definition.</p></div>
             <div class="card"><h3>Business key</h3><p>A product-owned identifier such as <code>HMS_BOOKING:100</code> used to find or continue the correct workflow instance.</p></div>
             <div class="card"><h3>Communication scope</h3><p>The configured isolation level for chat and calls: global, product, tenant or organization.</p></div>
+            <div class="card"><h3>Device ID</h3><p>A framework cookie used to group repeated logins from the same browser/device for session display and optional device-limit enforcement.</p></div>
+            <div class="card"><h3>Rate limit scope</h3><p>The key dimension used by distributed throttling, such as IP, user, API key, tenant or endpoint.</p></div>
+            <div class="card"><h3>Idempotency key</h3><p>A client-supplied request key that lets annotated create/submit APIs replay the first completed response instead of executing duplicate side effects.</p></div>
+            <div class="card"><h3>Trusted proxy</h3><p>A deployment proxy IP that LMNT is allowed to trust for forwarded client-address headers. Do not add untrusted public client ranges.</p></div>
           </div>
         </section>
 
@@ -1979,10 +2082,10 @@ npm run dev</code></pre></div>
           <span class="section-kicker">Source record</span>
           <h2><a class="anchor" href="#source-note">Source accuracy note</a></h2>
           <p>
-            This manual was updated from the local <strong>LMNT</strong> source snapshot, including the modular Maven reactor, UI workspace packages, workflow configuration, application properties, backend services and UI shell exports available on August 20, 2026.
+            This manual was updated from the local <strong>LMNT</strong> source snapshot, including the modular Maven reactor, UI workspace packages, workflow configuration, application properties, backend services and UI shell exports available on September 16, 2026.
           </p>
           <p>
-            The analyzed source reports backend and frontend package version <code>26.09.05</code>. Deployed products may differ through package version, product routes, menu data, permissions, subscriptions, enabled modules and infrastructure configuration.
+            The analyzed source reports backend and frontend package version <code>26.09.07</code>. Deployed products may differ through package version, product routes, menu data, permissions, subscriptions, enabled modules and infrastructure configuration.
           </p>
         </section>
 
